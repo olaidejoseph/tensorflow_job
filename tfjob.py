@@ -22,7 +22,8 @@ from keras.utils import np_utils
 import matplotlib.pyplot as plt
 from keras.layers.core import Dropout
 import logging
-import sys
+import tempfile
+import sys, os
 import argparse
 np.random.seed(1671)
 
@@ -48,13 +49,7 @@ def input_fn():
 
 def main(args):
 
-  if len(args) < 2:
-    print('You must specify model_dir for checkpoints such as'
-          ' /tmp/tfkeras_example/.')
-    return
-
-  model_dir = args[1]
-  print('Using %s to store checkpoints.' % model_dir)
+  model_dir = args.saved_model_dir
 
   # Define a Keras Model.
   NB_CLASSES = 1 
@@ -65,10 +60,8 @@ def main(args):
   model = Sequential()
   model.add(Dense(N_HIDDEN,input_shape=(30,)))
   model.add(Activation('relu'))
-  model.add(Dropout(DROPOUT))
   model.add(Dense(N_HIDDEN))
   model.add(Activation('relu'))
-  model.add(Dropout(DROPOUT))
   model.add(Dense(NB_CLASSES))
   model.add(Activation('sigmoid'))
 
@@ -81,10 +74,11 @@ def main(args):
   # Estimator that utilizes these DistributionStrateges.
   # Evaluator is a single worker, so using MirroredStrategy.
   
-
-  config = tf.estimator.RunConfig(
-          train_distribute=tf.distribute.MultiWorkerMirroredStrategy(),
-          eval_distribute=tf.distribute.MirroredStrategy())
+  strategytrain = tf.distribute.MultiWorkerMirroredStrategy()
+  strategytest = tf.distribute.MirroredStrategy()
+  config = tf.estimator.RunConfig(tf_random_seed=1,
+          train_distribute=strategytrain,
+          eval_distribute=strategytest)
   keras_estimator = tf.keras.estimator.model_to_estimator(
       keras_model=model, config=config, model_dir=model_dir)
 
@@ -94,11 +88,19 @@ def main(args):
   tf.estimator.train_and_evaluate(
       keras_estimator,
       train_spec=tf.estimator.TrainSpec(input_fn=input_fn),
-      eval_spec=tf.estimator.EvalSpec(input_fn=input_fn))
+      eval_spec=tf.estimator.EvalSpec(input_fn=input_fn, ))
 
 
 if __name__ == '__main__':
   logger = tf.get_logger()
   logger.setLevel(logging.INFO)
-  tf.compat.v1.app.run(argv=sys.argv)
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--saved_model_dir',
+                      type=str,
+                      required=True,
+                      default=os.path.join(tempfile.gettempdir(),
+                           'savedmodel'),
+                      help='Tensorflow export directory.')
+  unparsed = parser.parse_known_args()
+  tf.compat.v1.app.run(main=main, argv=[sys.argv[0]] + unparsed)
 
