@@ -102,12 +102,3 @@ if __name__ == '__main__':
   logger.setLevel(logging.INFO)
   tf.compat.v1.app.run(argv=sys.argv)
 
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--saved_model_dir',
-                      type=str,
-                      required=True,
-                      help='Tensorflow export directory.')
-  
-  parsed_args = parser.parse_args()
-  main(parsed_args)
-
