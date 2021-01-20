@@ -17,12 +17,6 @@ import tensorflow_datasets as tfds
 import tensorflow as tf
 from tensorflow.keras import layers, models
 
-os.environ['TF_CONFIG'] = json.dumps({
-    'cluster': {
-        'worker': ["localhost:12345", "localhost:23456"]
-    },
-    'task': {'type': 'worker', 'index': 0}
-})
 
 
 def make_datasets_unbatched():
