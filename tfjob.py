@@ -106,28 +106,13 @@ def main(args):
                          callbacks=callbacks)
 
   # Saving a model
-  # Let `is_chief` be a utility function that inspects the cluster spec and
-  # current task type and returns True if the worker is the chief and False
-  # otherwise.
-  def is_chief():
-    return TASK_INDEX == 0
-
-  if is_chief():
-    model_path = args.saved_model_dir
-
-  else:
-    # Save to a path that is unique across workers.
-    model_path = args.saved_model_dir + '/worker_tmp_' + str(TASK_INDEX)
+  model_path = args.saved_model_dir
 
   multi_worker_model.save(model_path)
 
 
 if __name__ == '__main__':
   os.environ['NCCL_DEBUG'] = 'INFO'
-
-  # to decide if a worker is chief, get TASK_INDEX in Cluster info
-  tf_config = json.loads(os.environ.get('TF_CONFIG') or '{}')
-  TASK_INDEX = tf_config['task']['index']
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--saved_model_dir',
