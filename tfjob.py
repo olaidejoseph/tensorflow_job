@@ -15,7 +15,11 @@ import os
 
 import tensorflow_datasets as tfds
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.keras import layers, models
+from keras.optimizers import SGD, Adam, RMSprop
+
+
 
 
 
@@ -30,10 +34,11 @@ def make_datasets_unbatched():
 
   datasets, _ = tfds.load(name='fashion_mnist', with_info=True, as_supervised=True)
 
-  return datasets['train'].map(scale).cache().shuffle(BUFFER_SIZE)
+  return datasets['train'].map(scale).cache().shuffle(BUFFER_SIZE),\
+  datasets['test'].map(scale).cache()
 
 
-def build_and_compile_cnn_model():
+def model():
   model = models.Sequential()
   model.add(
       layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
@@ -46,11 +51,11 @@ def build_and_compile_cnn_model():
   model.add(layers.Dense(10, activation='softmax'))
 
   model.summary()
-
-  model.compile(optimizer='adam',
+  optimizer = args.optimizer
+  optimizer.learning_rate=args.learning_rate
+  model.compile(optimizer=optimizer,
                 loss='sparse_categorical_crossentropy',
                 metrics=['accuracy'])
-
   return model
 
 
@@ -74,13 +79,17 @@ def main(args):
   BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
   with strategy.scope():
-    ds_train = make_datasets_unbatched().batch(BATCH_SIZE).repeat()
+    ds_train, ds_val = make_datasets_unbatched().batch(BATCH_SIZE).repeat(),\
+    make_datasets_unbatched().batch(BATCH_SIZE)
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = \
         tf.data.experimental.AutoShardPolicy.DATA
+
     ds_train = ds_train.with_options(options)
+    ds_val = ds_val.with_options(options)
+
     # Model building/compiling need to be within `strategy.scope()`.
-    multi_worker_model = build_and_compile_cnn_model()
+    multi_worker_model = model()
 
   # Function for decaying the learning rate.
   # You can define any decay function you need.
@@ -100,28 +109,27 @@ def main(args):
   # Keras' `model.fit()` trains the model with specified number of epochs and
   # number of steps per epoch. Note that the numbers here are for demonstration
   # purposes only and may not sufficiently produce a model with good quality.
-  multi_worker_model.fit(ds_train,
+  multi_worker_model.fit(ds_train, validation_data=ds_val,
                          epochs=10,
                          steps_per_epoch=70,
                          callbacks=callbacks)
 
   # Saving a model
-  # Let `is_chief` be a utility function that inspects the cluster spec and
-  # current task type and returns True if the worker is the chief and False
-  # otherwise.
   model_path = args.saved_model_dir
 
   multi_worker_model.save(model_path)
 
 
 if __name__ == '__main__':
-  os.environ['NCCL_DEBUG'] = 'INFO'
-
   parser = argparse.ArgumentParser()
   parser.add_argument('--saved_model_dir',
                       type=str,
                       required=True,
                       help='Tensorflow export directory.')
+  parser.add_argument('--learning_rate', type=float, default=0.001,
+                      help='Initial learning rate')
+  parser.add_argument('--optimizer', type=float, default=Adam(),
+                      help='Initial learning rate')
 
   parsed_args = parser.parse_args()
   main(parsed_args)
