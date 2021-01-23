@@ -38,8 +38,7 @@ def make_datasets_unbatched():
 
   datasets, _ = tfds.load(name='fashion_mnist', with_info=True, as_supervised=True)
 
-  return datasets['train'].map(scale).cache().shuffle(BUFFER_SIZE),\
-  datasets['test'].map(scale).cache()
+  return datasets['train'].map(scale).cache().shuffle(BUFFER_SIZE)
 
 
 def model(args):
@@ -73,16 +72,12 @@ def main(args):
   BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
   with strategy.scope():
-    ds_train, ds_val = make_datasets_unbatched()
-    ds_train = ds_train.batch(BATCH_SIZE).repeat()
-    ds_val = ds_val.batch(BATCH_SIZE)
+    ds_train = make_datasets_unbatched().batch(BATCH_SIZE).repeat()
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = \
         tf.data.experimental.AutoShardPolicy.DATA
 
     ds_train = ds_train.with_options(options)
-    ds_val = ds_val.with_options(options)
-
     # Model building/compiling need to be within `strategy.scope()`.
     multi_worker_model = model(args)
 
@@ -103,7 +98,7 @@ def main(args):
   # Keras' `model.fit()` trains the model with specified number of epochs and
   # number of steps per epoch. Note that the numbers here are for demonstration
   # purposes only and may not sufficiently produce a model with good quality.
-  multi_worker_model.fit(ds_train, validation_data=ds_val,
+  multi_worker_model.fit(ds_train,
                          epochs=10,
                          steps_per_epoch=70,
                          callbacks=callbacks)
