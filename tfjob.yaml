@@ -21,6 +21,8 @@ spec:
                 - "python"
                 - "/tfjob.py"
                 - "--saved_model_dir=/train/saved_model/"
+                - "--learning_rate=0.001"
+                - "--optimizer=SGD()"
             volumeMounts:
                 - mountPath: "/train"
                   name: "training"
