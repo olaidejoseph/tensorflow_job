@@ -12,12 +12,15 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import json
 import os
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import tensorflow_datasets as tfds
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, models
 from tensorflow.keras.optimizers import SGD, Adam, RMSprop
+
 
 
 
