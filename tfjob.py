@@ -38,7 +38,7 @@ def make_datasets_unbatched():
   datasets['test'].map(scale).cache()
 
 
-def model():
+def model(args):
   model = models.Sequential()
   model.add(
       layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
