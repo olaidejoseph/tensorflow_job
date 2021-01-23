@@ -53,10 +53,10 @@ def model(args):
 
   model.summary()
   optimizer = args.optimizer
-  optimizer.learning_rate=args.learning_rate
   model.compile(optimizer=optimizer,
                 loss='sparse_categorical_crossentropy',
                 metrics=['accuracy'])
+  optimizer.learning_rate=args.learning_rate
   return model
 
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
                       help='Tensorflow export directory.')
   parser.add_argument('--learning_rate', type=float, default=0.001,
                       help='Initial learning rate')
-  parser.add_argument('--optimizer', type=float, default=Adam(),
+  parser.add_argument('--optimizer', type=str, default='adam',
                       help='Initial learning rate')
 
   parsed_args = parser.parse_args()
