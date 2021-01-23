@@ -90,7 +90,7 @@ def main(args):
     ds_val = ds_val.with_options(options)
 
     # Model building/compiling need to be within `strategy.scope()`.
-    multi_worker_model = model()
+    multi_worker_model = model(args)
 
   # Function for decaying the learning rate.
   # You can define any decay function you need.
