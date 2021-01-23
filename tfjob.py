@@ -79,8 +79,9 @@ def main(args):
   BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
   with strategy.scope():
-    ds_train, _ = make_datasets_unbatched().batch(BATCH_SIZE).repeat()
-    _, ds_val = make_datasets_unbatched().batch(BATCH_SIZE)
+    ds_train, ds_val = make_datasets_unbatched()
+    ds_train = make_datasets_unbatched().batch(BATCH_SIZE).repeat()
+    ds_val = make_datasets_unbatched().batch(BATCH_SIZE)
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = \
         tf.data.experimental.AutoShardPolicy.DATA
