@@ -35,7 +35,7 @@ def make_datasets_unbatched():
   datasets, _ = tfds.load(name='fashion_mnist', with_info=True, as_supervised=True)
 
   return datasets['train'].map(scale).cache().shuffle(BUFFER_SIZE),\
-  datasets['test'].map(scale).cache().shuffle(BUFFER_SIZE)
+  datasets['test'].map(scale).cache()
 
 
 def model():
@@ -79,8 +79,8 @@ def main(args):
   BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
   with strategy.scope():
-    ds_train, ds_val = make_datasets_unbatched().batch(BATCH_SIZE).repeat(),\
-    make_datasets_unbatched().batch(BATCH_SIZE)
+    ds_train, _ = make_datasets_unbatched().batch(BATCH_SIZE).repeat()
+    _, ds_val = make_datasets_unbatched().batch(BATCH_SIZE)
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = \
         tf.data.experimental.AutoShardPolicy.DATA
