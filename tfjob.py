@@ -115,7 +115,7 @@ if __name__ == '__main__':
                       type=str,
                       required=True,
                       help='Tensorflow export directory.')
-  parser.add_argument('--learning_rate', type=float, default=0.001,
+  parser.add_argument('--learning_rate', type=float,  required=True, default=0.001,
                       help='Initial learning rate')
   parser.add_argument('--optimizer', type=str, required=True, default='adam',
                       help='optimizer')
