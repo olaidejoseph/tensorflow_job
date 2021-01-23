@@ -46,8 +46,11 @@ def model(args):
   model.add(layers.Conv2D(64, (3, 3), activation='relu'))
   model.add(layers.MaxPooling2D((2, 2)))
   model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+  model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+  model.add(layers.MaxPooling2D((2, 2)))
+  model.add(layers.Conv2D(128, (3, 3), activation='relu'))
   model.add(layers.Flatten())
-  model.add(layers.Dense(64, activation='relu'))
+  model.add(layers.Dense(256, activation='relu'))
   model.add(layers.Dense(10, activation='softmax'))
 
   model.summary()
@@ -111,7 +114,7 @@ def main(args):
   # number of steps per epoch. Note that the numbers here are for demonstration
   # purposes only and may not sufficiently produce a model with good quality.
   multi_worker_model.fit(ds_train, validation_data=ds_val,
-                         epochs=10,
+                         epochs=20,
                          steps_per_epoch=70,
                          callbacks=callbacks)
 
