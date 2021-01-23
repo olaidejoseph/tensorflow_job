@@ -20,6 +20,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, models
 from tensorflow.keras.optimizers import SGD, Adam, RMSprop
+from keras import backend as K
 
 
 
@@ -52,20 +53,12 @@ def model(args):
   model.add(layers.Dense(10, activation='softmax'))
 
   model.summary()
-  optimizer = args.optimizer
-  optimizer.lr.assign(args.learning_rate)
-  model.compile(optimizer=optimizer,
+  opt = args.optimizer
+  model.compile(optimizer=opt,
                 loss='sparse_categorical_crossentropy',
                 metrics=['accuracy'])
+  K.set_value(model.optimizer.learning_rate, args.learning_rate)
   return model
-
-
-def decay(epoch):
-  if epoch < 3: #pylint: disable=no-else-return
-    return 1e-3
-  if 3 <= epoch < 7:
-    return 1e-4
-  return 1e-5
 
 
 def main(args):
@@ -104,9 +97,8 @@ def main(args):
 
   callbacks = [
       tf.keras.callbacks.TensorBoard(log_dir='./logs'),
-      tf.keras.callbacks.LearningRateScheduler(decay),
       PrintLR()
-  ]
+   ]
 
   # Keras' `model.fit()` trains the model with specified number of epochs and
   # number of steps per epoch. Note that the numbers here are for demonstration
@@ -130,7 +122,7 @@ if __name__ == '__main__':
                       help='Tensorflow export directory.')
   parser.add_argument('--learning_rate', type=float, default=0.001,
                       help='Initial learning rate')
-  parser.add_argument('--optimizer', default=Adam(),
+  parser.add_argument('--optimizer', type=str, required=True, default='adam',
                       help='optimizer')
 
   parsed_args = parser.parse_args()
