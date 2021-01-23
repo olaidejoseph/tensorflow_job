@@ -22,7 +22,7 @@ spec:
                 - "/tfjob.py"
                 - "--saved_model_dir=/train/saved_model/"
                 - "--learning_rate=0.001"
-                - "--optimizer"="adam"
+                - "--optimizer=adam"
             volumeMounts:
                 - mountPath: "/train"
                   name: "training"
