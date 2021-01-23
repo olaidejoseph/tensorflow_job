@@ -112,7 +112,7 @@ def main(args):
   # number of steps per epoch. Note that the numbers here are for demonstration
   # purposes only and may not sufficiently produce a model with good quality.
   multi_worker_model.fit(ds_train, validation_data=ds_val,
-                         epochs=20,
+                         epochs=10,
                          steps_per_epoch=70,
                          callbacks=callbacks)
 
