@@ -35,7 +35,7 @@ def make_datasets_unbatched():
   datasets, _ = tfds.load(name='fashion_mnist', with_info=True, as_supervised=True)
 
   return datasets['train'].map(scale).cache().shuffle(BUFFER_SIZE),\
-  datasets['test'].map(scale).cache()
+  datasets['test'].map(scale).cache().shuffle(BUFFER_SIZE)
 
 
 def model():
