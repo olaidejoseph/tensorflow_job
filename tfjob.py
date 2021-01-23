@@ -80,8 +80,8 @@ def main(args):
 
   with strategy.scope():
     ds_train, ds_val = make_datasets_unbatched()
-    ds_train = make_datasets_unbatched().batch(BATCH_SIZE).repeat()
-    ds_val = make_datasets_unbatched().batch(BATCH_SIZE)
+    ds_train = ds_train.batch(BATCH_SIZE).repeat()
+    ds_val = ds_val.batch(BATCH_SIZE)
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = \
         tf.data.experimental.AutoShardPolicy.DATA
