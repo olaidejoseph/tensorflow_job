@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: tfevent-volume
-  namespace: josephadmin 
+  namespace: kubeflow-josepholaide10 
   labels:
     type: local
     app: tfjob
